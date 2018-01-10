@@ -13,7 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jsdom": "^11.5.1"
+    "jsdom": "^11.5.1",
+    "wcwidth": "^1.0.1"
   },
   "devDependencies": {
     "eslint": "^4.14.0",
