@@ -1,5 +1,5 @@
 const { execSync } = require('child_process');
-const wcwidth = require('wcwidth');
+const wcwidth = require('./lib/wcwidth');
 
 function getDisplaySize(text) {
   return text
@@ -69,10 +69,20 @@ function fetchFromTwitter(path) {
   return execSync(`curl -s https://mobile.twitter.com${path}`).toString('utf8');
 }
 
+function decodeHtmlEntities(text) {
+  return text
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec));
+}
+
 module.exports = {
   wrap,
   colorize,
   center,
   fetchFromTwitter,
   getDisplaySize,
+  decodeHtmlEntities,
 };

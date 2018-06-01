@@ -1,4 +1,4 @@
-const { JSDOM } = require('jsdom');
+const $ = require('./domparser');
 const { colorize, fetchFromTwitter } = require('./utils');
 const { clearScreen } = require('./display');
 const {
@@ -169,17 +169,10 @@ function handleContextRequest(state, drawStream, _drawAllStreams, _key) {
       state.selectedStreamIndex,
     );
 
-    const contextHtml = fetchFromTwitter(tweet.contextLink);
+    const context = $.parse(fetchFromTwitter(tweet.contextLink));
 
-    const dom = new JSDOM(contextHtml);
-    const $ = dom.window.document;
-
-    const nodes = Object.values($.querySelectorAll('.tweet, .main-tweet'));
-
-    const ids = nodes.map(node => node
-      .getElementsByClassName('tweet-text')[0]
-      .dataset
-      .id);
+    const nodes = $.querySelectorAll(context, '.tweet|.main-tweet');
+    const ids = nodes.map(node => $.querySelector(node, '.tweet-text')['data-id']);
 
     const contextTweets = nodes
       .map((node, index) => {

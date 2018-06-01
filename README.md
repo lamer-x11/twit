@@ -12,17 +12,14 @@ The retrieval of data is a synchronous operation because I want to have a loadin
 
 ## Installation
 
-* on desktop
-
 ```bash
-$ npm install
-
+$ touch profiles.txt
 ```
+
 * with Docker
 
 ```bash
 $ docker build -t twit .
-$ docker run -ti -v $(pwd):/workdir twit npm install
 ```
 
 ## Usage
