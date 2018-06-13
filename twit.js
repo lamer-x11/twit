@@ -2,20 +2,20 @@
 
 const fs = require('fs');
 const readline = require('readline');
-const { JSDOM } = require('jsdom');
-const { handleInput } = require('./lib/input');
-const { fetchFromTwitter } = require('./lib/utils');
+const $ = require('./src/domparser');
+const { handleInput } = require('./src/input');
+const { fetchFromTwitter, decodeHtmlEntities } = require('./src/utils');
 const {
   formatTweet,
   parseTweet,
   calculateOffsets,
-} = require('./lib/tweets');
+} = require('./src/tweets');
 const {
   drawAllStreams,
   drawStream,
   drawSplashMsg,
   drawErrorMsg,
-} = require('./lib/display');
+} = require('./src/display');
 
 readline.emitKeypressEvents(process.stdin);
 process.stdin.setRawMode(true);
@@ -62,12 +62,10 @@ state.streams = sources
   .map((html, index) => {
     drawSplashMsg(`Processing stream ${index + 1} of ${totalSources}`);
 
-    const dom = new JSDOM(html);
-    const $ = dom.window.document;
+    const dom = $.parse(html);
+    const name = $.querySelector(dom, '.fullname');
 
-    const name = $.querySelector('.fullname');
-
-    if (name === null) {
+    if (name === undefined) {
       const profile = sources[index];
 
       drawErrorMsg(`Unprocessable data received for profile @${profile}`);
@@ -77,10 +75,10 @@ state.streams = sources
 
     const stream = {};
 
-    stream.name = name.textContent.trim();
-    stream.handle = $.querySelector('.screen-name').textContent.trim();
+    stream.name = decodeHtmlEntities($.getTextContent(name));
+    stream.handle = $.getTextContent($.querySelector(dom, '.screen-name'));
     stream.tweets = Object
-      .values($.querySelectorAll('.tweet'))
+      .values($.querySelectorAll(dom, '.tweet'))
       .map(parseTweet)
       .map((tweet) => {
         tweet.box = formatTweet(tweet, state.streamSize);

@@ -3,6 +3,12 @@
     "rules": {
       "no-plusplus": "off",
       "no-param-reassign": "off",
-      "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}]
+      "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
+      "no-use-before-define": "off",
+      "no-continue": "off",
+      "no-use-before-define": "off",
+      "prefer-template": "off",
+      "no-undef-init": "off",
+      "no-cond-assign": "off"
     }
 }

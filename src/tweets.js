@@ -1,5 +1,5 @@
-const { JSDOM } = require('jsdom');
-const { wrap, getDisplaySize } = require('./utils');
+const $ = require('./domparser');
+const { wrap, getDisplaySize, decodeHtmlEntities } = require('./utils');
 
 function renderRegularBox(content, width) {
   let box = content.reduce((agg, line) => {
@@ -58,7 +58,7 @@ function formatTweet(tweet, width, isContext = false) {
   return render(wrappedText, width);
 }
 
-function parseTweet(tweetNode) {
+function parseTweet(node) {
   const tweet = {
     isRetweet: false,
     retweetAuthor: '',
@@ -66,38 +66,32 @@ function parseTweet(tweetNode) {
     recipients: [],
   };
 
-  const div = (new JSDOM()).window.document.createElement('div');
-  div.appendChild(tweetNode);
+  const textNode = $.querySelector(node, '.tweet-text');
+  const dateNode = $.querySelector(node, '.timestamp');
 
-  const textNode = div.querySelector('.tweet-text');
-  const dateNode = div.querySelector('.timestamp');
-
-  tweet.date = dateNode ? dateNode.textContent.trim() : '';
-  tweet.id = textNode.dataset.id;
-  tweet.text = Object
-    .values(div.querySelectorAll('.tweet-text .twitter_external_link'))
+  tweet.date = dateNode ? $.getTextContent(dateNode) : '';
+  tweet.id = textNode['data-id'];
+  tweet.text = $.querySelectorAll(textNode, '.twitter_external_link')
     .reduce(
-      (agg, node) => agg.replace(node.textContent, node.dataset.url),
-      textNode.textContent.trim(),
+      (agg, linkNode) => agg.replace($.getTextContent(linkNode), linkNode['data-url']),
+      decodeHtmlEntities($.getTextContent(textNode, true)),
     );
 
-  tweet.author = div.querySelector('.username').textContent.trim();
+  tweet.author = $.getTextContent($.querySelector(node, '.username'));
 
-  const replyContext = div.querySelector('.tweet-reply-context');
-  const socialContext = div.querySelector('.tweet-social-context');
+  const replyContext = $.querySelector(node, '.tweet-reply-context');
+  const socialContext = $.querySelector(node, '.tweet-social-context');
 
-  tweet.isReply = replyContext !== null;
-  tweet.isRetweet = socialContext !== null;
+  tweet.isReply = replyContext !== undefined;
+  tweet.isRetweet = socialContext !== undefined;
 
   if (tweet.isReply) {
-    tweet.recipients = Object.values(replyContext.querySelectorAll('a'))
-      .map(a => a.textContent.trim().replace('\n', '').replace(/ +/, ' '));
-
-    tweet.contextLink = div.querySelector('.metadata a').href;
+    tweet.recipients = $.querySelectorAll(replyContext, 'a').map($.getTextContent);
+    tweet.contextLink = $.querySelector($.querySelector(node, '.metadata'), 'a').href;
   }
 
   if (tweet.isRetweet) {
-    tweet.retweetAuthor = div.querySelector('.username').textContent.trim();
+    tweet.retweetAuthor = tweet.author;
   }
 
   return tweet;
