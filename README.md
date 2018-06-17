@@ -47,4 +47,4 @@ $ docker run -ti -v $(pwd):/workdir twit
 
 ## Example
 
-![Example](https://github.com/lamer-x11/twit/raw/master/example.gif)
+![Example](https://github.com/lamer-x11/examples/raw/master/twit.gif)
