@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const wcwidth = require('./lib/wcwidth');
 
 function getDisplaySize(text) {
@@ -66,7 +66,13 @@ function fetchFromTwitter(path) {
     path = `/${path}`;
   }
 
-  return execSync(`curl -s https://mobile.twitter.com${path}`).toString('utf8');
+  const result = spawnSync('curl', ['-sS', `https://mobile.twitter.com${path}`]);
+
+  if (result.status !== 0) {
+    throw new Error(result.stderr.toString());
+  }
+
+  return result.stdout.toString();
 }
 
 function decodeHtmlEntities(text) {
